@@ -1,0 +1,99 @@
+#Projet FIRE : Analyse des données
+
+library(vegan)
+library(ade4)
+library(picante)
+library(gplots)
+
+setwd("~/Desktop/HAB923B - FIRE 2.0")
+matrice=read.table("matricetest.csv",header=T,sep=";",dec=",")
+
+# Fusion des quadrats en sites et en stades
+#####
+
+## Stade 1 ##
+#Site 1
+matrice$site1<-matrice$E_1+matrice$E_2+matrice$E_3 # Fusion des quadrats
+matrice$site1<-replace(matrice$site1,matrice$site1>0,1) #Remplacement des valeurs >0
+#Site 2
+matrice$site2<-matrice$F_1+matrice$F_2+matrice$F_3
+matrice$site2<-replace(matrice$site2,matrice$site2>0,1)
+#Site 3
+matrice$site3<-matrice$G_1+matrice$G_2+matrice$G_3
+matrice$site3<-replace(matrice$site3,matrice$site3>0,1)
+
+Richesse1<-(length(matrice$site3[matrice$site3!=0])+length(matrice$site2[matrice$site2!=0])+length(matrice$site1[matrice$site1!=0]))/3
+Richesse1 # Richesse spécifique moyenne du stade 1 (pour écart-type faire fonction ecart type ou rentrer les richessede chaque site)
+
+matrice$stade1cum<-matrice$site1+matrice$site2+matrice$site3  
+matrice$stade1pres<-replace(matrice$stade1cum,matrice$stade1cum>0,1)  
+
+## Stade 2 ##
+#Site 1
+matrice$site4<-matrice$H_1+matrice$H_2+matrice$H_3 # Fusion des quadrats
+matrice$site4<-replace(matrice$site4,matrice$site4>0,1) #Remplacement des valeurs >0
+#Site 2
+matrice$site5<-matrice$I_1+matrice$I_2+matrice$I_3
+matrice$site5<-replace(matrice$site5,matrice$site5>0,1)
+#Site 3
+matrice$site6<-matrice$J_1+matrice$J_2+matrice$J_3
+matrice$site6<-replace(matrice$site6,matrice$site6>0,1)
+
+Richesse2<-(length(matrice$site4[matrice$site4!=0])+length(matrice$site5[matrice$site5!=0])+length(matrice$site6[matrice$site6!=0]))/3
+Richesse2 # Richesse spécifique moyenne du stade 1 (pour écart-type faire fonction ecart type ou rentrer les richessede chaque site)
+
+matrice$stade2cum<-matrice$site4+matrice$site5+matrice$site6  
+matrice$stade2pres<-replace(matrice$stade2cum,matrice$stade2cum>0,1)  
+
+## Stade 3 ##
+#Site 1
+matrice$site7<-matrice$K_1+matrice$K_2+matrice$K_3 # Fusion des quadrats
+matrice$site7<-replace(matrice$site7,matrice$site7>0,1) #Remplacement des valeurs >0
+#Site 2
+matrice$site8<-matrice$L_1+matrice$L_2+matrice$L_3
+matrice$site8<-replace(matrice$site8,matrice$site8>0,1)
+#Site 3
+matrice$site9<-matrice$M_1+matrice$M_2+matrice$M_3
+matrice$site9<-replace(matrice$site9,matrice$site9>0,1)
+
+Richesse3<-(length(matrice$site7[matrice$site7!=0])+length(matrice$site8[matrice$site8!=0])+length(matrice$site9[matrice$site9!=0]))/3
+Richesse3 # Richesse spécifique moyenne du stade 1 (pour écart-type faire fonction ecart type ou rentrer les richessede chaque site)
+
+matrice$stade3cum<-matrice$site7+matrice$site8+matrice$site9 
+matrice$stade3pres<-replace(matrice$stade3cum,matrice$stade3cum>0,1)    
+
+ 
+#Beta
+#####
+library("vegan")
+library("ade4")
+library("picante")
+
+#Création des tableaux
+tabsite<- subset(matrice, select = c(site1, site2, site3, site4, site5, site6, site7, site8, site9))
+tabstade<-subset(matrice, select = c(stade1pres,stade2pres,stade3pres))
+tabstade2<-t(tabstade)
+tabsite2<-t(tabsite)
+
+# Indices Beta (Jaccard : cf mesure de labiodiversité de Eric)
+# Vegan
+vegdist<-vegdist(tabstade2, method = "jaccard", binary = TRUE)
+vegdist
+vegdist2<-vegdist(tabsite2, method = "jaccard", binary = TRUE)
+vegdist2
+
+#Picante (1-Y) du résultat précédent
+betadiv<-betadiver(tabstade2, method = 10) # 10 : Jaccard
+betadiv
+# Q : Part de beta du au turnover?
+
+#PCo
+#Site
+Jaccard2 <- dist.binary(tabsite2, method = 1)
+DistJaccard2 <- as.dist(sqrt(1 - Jaccard2)) 
+PcoJaccard2 <- dudi.pco(DistJaccard2, scannf = FALSE)
+scatter(PcoJaccard2, posieig = "bottomright")
+# Question : Comment améliorer ça?
+
+# Diagramme de Vein
+v.table <- venn(tabstade)
